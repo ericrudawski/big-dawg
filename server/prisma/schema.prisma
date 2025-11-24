@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  password        String
+  name            String?
+  dogName         String   @default("Buddy")
+  dogPersonality  String   @default("Playful Shepherd") // Stoic Wolf, Playful Shepherd, Chill Husky, Drill Sergeant Malinois
+  theme           String   @default("Golden Retriever") // Dalmatian, Golden Retriever, Husky, Shiba
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  habits          Habit[]
+  chatMessages    ChatMessage[]
+  uploads         Upload[]
+  sheets          Sheet[]
+}
+
+model Habit {
+  id          String     @id @default(uuid())
+  userId      String
+  title       String
+  icon        String     @default("check")
+  type        String     @default("binary") // binary, numeric
+  goal        Int?       // For numeric habits
+  unit        String?    // e.g., "glasses", "minutes"
+  frequency   String     // JSON string: { type: "daily" | "weekly" | "monthly" | "custom", days: [], interval: 1 }
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  user        User       @relation(fields: [userId], references: [id])
+  logs        HabitLog[]
+}
+
+model HabitLog {
+  id        String   @id @default(uuid())
+  habitId   String
+  date      DateTime // YYYY-MM-DD
+  value     Int      // 1 for binary, N for numeric
+  createdAt DateTime @default(now())
+  
+  habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String
+  role      String   // user, assistant
+  content   String
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Upload {
+  id        String   @id @default(uuid())
+  userId    String
+  filename  String
+  url       String
+  analysis  String?  // JSON string: Result from Vision API
+  createdAt DateTime @default(now())
+  
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Sheet {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  data      String   // JSON string: Array of arrays or object
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  user      User     @relation(fields: [userId], references: [id])
+}
