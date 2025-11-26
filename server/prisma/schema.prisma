@@ -22,6 +22,20 @@ model User {
   chatMessages    ChatMessage[]
   uploads         Upload[]
   sheets          Sheet[]
+  weeklyStatuses  WeeklyStatus[]
+}
+
+model WeeklyStatus {
+  id        String   @id @default(uuid())
+  userId    String
+  weekStart DateTime // Normalized to start of week (e.g., Sunday 00:00)
+  status    String   // "ACTIVE" | "SUSPENDED"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, weekStart])
 }
 
 model Habit {
@@ -32,6 +46,7 @@ model Habit {
   type        String     @default("binary") // binary, numeric
   goal        Int?       // For numeric habits
   unit        String?    // e.g., "glasses", "minutes"
+  weeklyTarget Int       @default(7) // Number of times per week to complete
   frequency   String     // JSON string: { type: "daily" | "weekly" | "monthly" | "custom", days: [], interval: 1 }
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -48,8 +63,6 @@ model HabitLog {
   createdAt DateTime @default(now())
   
   habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
-
-  @@unique([habitId, date])
 }
 
 model ChatMessage {

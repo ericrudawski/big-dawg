@@ -3,50 +3,81 @@
 @tailwind utilities;
 
 :root {
-  /* Default: Golden Retriever */
-  --color-primary: #D4AF37;
-  --color-secondary: #F5E6CA;
-  --color-accent: #8B4513;
-  --color-background: #FFFDF5;
-  --color-surface: #FFFFFF;
-  --color-text: #2D2D2D;
-  --color-muted: #8E8E8E;
+  /* Default: Void (Black & White) */
+  --color-primary: #FFFFFF;
+  --color-secondary: #000000;
+  --color-accent: #FFFFFF;
+  --color-background: #000000;
+  --color-surface: #000000;
+  --color-text: #FFFFFF;
+  --color-muted: #666666;
+  --border-width: 2px;
 }
 
-[data-theme='dalmatian'] {
-  --color-primary: #1A1A1A;
-  --color-secondary: #E5E5E5;
-  --color-accent: #FF3333; /* Red collar pop */
-  --color-background: #F9F9F9;
-  --color-surface: #FFFFFF;
+[data-theme='void'] {
+  --color-primary: #FFFFFF;
+  --color-secondary: #000000;
+  --color-accent: #FFFFFF;
+  --color-background: #000000;
+  --color-surface: #000000;
+  --color-text: #FFFFFF;
+  --color-muted: #666666;
+}
+
+[data-theme='concrete'] {
+  --color-primary: #000000;
+  --color-secondary: #CCCCCC;
+  --color-accent: #FF4500;
+  /* Safety Orange */
+  --color-background: #E5E5E5;
+  --color-surface: #E5E5E5;
   --color-text: #000000;
   --color-muted: #666666;
 }
 
-[data-theme='husky'] {
-  --color-primary: #5D8AA8;
-  --color-secondary: #E0F7FA;
-  --color-accent: #2C3E50;
-  --color-background: #F0F8FF;
-  --color-surface: #FFFFFF;
-  --color-text: #1A202C;
-  --color-muted: #718096;
-}
-
-[data-theme='shiba'] {
-  --color-primary: #C06C44;
-  --color-secondary: #F3E5DC;
-  --color-accent: #5C4033;
-  --color-background: #FAF3E0;
-  --color-surface: #FFFFFF;
-  --color-text: #3E2723;
-  --color-muted: #8D6E63;
+[data-theme='blueprint'] {
+  --color-primary: #FFFFFF;
+  --color-secondary: #003366;
+  --color-accent: #FFFF00;
+  /* Blueprint Yellow */
+  --color-background: #003366;
+  --color-surface: #003366;
+  --color-text: #FFFFFF;
+  --color-muted: #88CCFF;
 }
 
 body {
-  @apply bg-background text-text font-sans antialiased transition-colors duration-300;
+  @apply bg-background text-text font-mono antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  @apply font-serif;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-mono uppercase tracking-tighter;
+}
+
+button {
+  @apply uppercase tracking-widest font-bold;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-background);
+  border-left: var(--border-width) solid var(--color-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border: var(--border-width) solid var(--color-background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-accent);
 }

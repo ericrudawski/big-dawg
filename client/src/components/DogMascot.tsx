@@ -1,33 +1,43 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+
+const companionImages: Record<string, string> = {
+    'Stoic Wolf': '/wolf_stoic_1763954151078.png',
+    'Playful Shepherd': '/shepherd_playful_1763954164736.png',
+    'Chill Husky': '/husky_chill_1763954180255.png',
+};
 
 export const DogMascot = () => {
-    return (
-        <div className="relative w-48 h-48 mx-auto my-8">
-            <motion.svg
-                viewBox="0 0 200 200"
-                className="w-full h-full drop-shadow-xl"
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
-            >
-                {/* Simple geometric dog face */}
-                <circle cx="100" cy="100" r="80" className="fill-secondary" />
-                <path d="M60 80 L80 120 L100 80" className="fill-text opacity-80" /> {/* Left Eye */}
-                <path d="M140 80 L120 120 L100 80" className="fill-text opacity-80" /> {/* Right Eye */}
-                <path d="M90 130 Q100 140 110 130" className="stroke-text fill-none stroke-4" /> {/* Nose */}
-                <path d="M40 60 L60 20 L80 60" className="fill-primary" /> {/* Left Ear */}
-                <path d="M160 60 L140 20 L120 60" className="fill-primary" /> {/* Right Ear */}
-            </motion.svg>
+    const { user } = useAuth();
+    const companionName = user?.dogPersonality || 'Chill Husky';
+    const companionImage = companionImages[companionName] || '/husky_chill_1763954180255.png';
 
-            {/* Speech Bubble */}
+    return (
+        <div className="flex flex-col items-center my-8">
             <motion.div
-                className="absolute -top-4 -right-4 bg-surface p-3 rounded-xl shadow-lg border border-muted/10 max-w-[150px]"
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.5 }}
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+                className="relative"
             >
-                <p className="text-xs font-serif italic text-text">"Keep it up, boss!"</p>
+                <div className="absolute inset-0 bg-secondary/40 rounded-full blur-3xl scale-110" />
+                <div className="relative w-48 h-48 bg-secondary/20 rounded-full flex items-center justify-center">
+                    <img
+                        src={companionImage}
+                        alt={companionName}
+                        className="w-40 h-40 object-contain"
+                    />
+                </div>
+            </motion.div>
+            <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                className="mt-6 text-center"
+            >
+                <h3 className="text-lg font-serif font-semibold text-text">{companionName}</h3>
+                <p className="text-sm text-muted mt-1">COMPANION</p>
             </motion.div>
         </div>
     );

@@ -22,7 +22,7 @@ export const register = async (req: Request, res: Response) => {
                 name,
                 dogName: dogName || 'Buddy',
                 dogPersonality: dogPersonality || 'Playful Shepherd',
-                theme: theme || 'Golden Retriever',
+                theme: theme || 'void',
             },
         });
 
@@ -62,5 +62,23 @@ export const me = async (req: Request, res: Response) => {
         res.json(userWithoutPassword);
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch user' });
+    }
+};
+
+export const updateUser = async (req: Request, res: Response) => {
+    try {
+        // @ts-ignore
+        const userId = req.user?.userId;
+        const { name, dogName, dogPersonality, theme } = req.body;
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: { name, dogName, dogPersonality, theme },
+        });
+
+        const { password, ...userWithoutPassword } = user;
+        res.json(userWithoutPassword);
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to update user' });
     }
 };

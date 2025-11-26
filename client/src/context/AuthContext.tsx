@@ -6,6 +6,7 @@ interface User {
     email: string;
     name: string;
     theme: string;
+    dogPersonality: string;
 }
 
 interface AuthContextType {
@@ -13,6 +14,7 @@ interface AuthContextType {
     token: string | null;
     login: (token: string, user: User) => void;
     logout: () => void;
+    updateUser: (updates: Partial<User>) => Promise<void>;
     isAuthenticated: boolean;
 }
 
@@ -25,9 +27,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     useEffect(() => {
         if (token) {
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            // Fetch user details if needed
+            axios.get('/api/auth/me')
+                .then(res => {
+                    console.log('AuthContext: Fetched user on load', res.data);
+                    setUser(res.data);
+                })
+                .catch(err => {
+                    console.error('Failed to fetch user', err);
+                    logout();
+                });
         } else {
             delete axios.defaults.headers.common['Authorization'];
+            setUser(null);
         }
     }, [token]);
 
@@ -43,8 +54,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(null);
     };
 
+    const updateUser = async (updates: Partial<User>) => {
+        if (!user) return;
+        console.log('AuthContext: updateUser called with', updates);
+        try {
+            const res = await axios.put('/api/auth/me', updates);
+            console.log('AuthContext: API response', res.data);
+            setUser(res.data);
+        } catch (error) {
+            console.error('Failed to update user', error);
+            throw error;
+        }
+    };
+
+    useEffect(() => {
+        console.log('AuthContext: Theme effect running. User theme:', user?.theme);
+        if (user?.theme) {
+            const normalizedTheme = user.theme.toLowerCase().replace(/\s+/g, '-');
+            console.log('AuthContext: Setting data-theme to', normalizedTheme);
+            document.documentElement.setAttribute('data-theme', normalizedTheme);
+        } else {
+            console.log('AuthContext: Removing data-theme');
+            document.documentElement.removeAttribute('data-theme');
+        }
+    }, [user?.theme]);
+
     return (
-        <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token }}>
+        <AuthContext.Provider value={{ user, token, login, logout, updateUser, isAuthenticated: !!token }}>
             {children}
         </AuthContext.Provider>
     );
