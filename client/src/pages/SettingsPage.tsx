@@ -1,5 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useAccent } from '../context/AccentContext';
 
 const themes = [
     {
@@ -21,6 +22,7 @@ const themes = [
 
 export const SettingsPage = () => {
     const { user, updateUser } = useAuth();
+    const { mode, setMode, colors, updateColor } = useAccent();
 
     const handleThemeChange = async (themeId: string) => {
         console.log('SettingsPage: handleThemeChange called with', themeId);
@@ -75,6 +77,89 @@ export const SettingsPage = () => {
                             </button>
                         );
                     })}
+                </div>
+            </section>
+
+            {/* Accent Configuration */}
+            <section className="space-y-6">
+                <div className="flex items-center gap-4">
+                    <h2 className="text-xl font-bold uppercase">ACCENT CONFIGURATION</h2>
+                    <div className="h-px bg-primary flex-1"></div>
+                </div>
+
+                <div className="space-y-6">
+                    {/* Mode Toggle */}
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => setMode('single')}
+                            className={`flex-1 p-4 border-2 font-bold transition-all ${mode === 'single' ? 'bg-primary text-background border-primary' : 'bg-transparent text-muted border-muted hover:border-primary hover:text-primary'}`}
+                        >
+                            SINGLE MODE
+                        </button>
+                        <button
+                            onClick={() => setMode('many')}
+                            className={`flex-1 p-4 border-2 font-bold transition-all ${mode === 'many' ? 'bg-primary text-background border-primary' : 'bg-transparent text-muted border-muted hover:border-primary hover:text-primary'}`}
+                        >
+                            MANY MODE
+                        </button>
+                    </div>
+
+                    {/* Color Pickers */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {mode === 'single' ? (
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs font-mono text-muted uppercase">Global Accent</label>
+                                <div className="flex items-center justify-between gap-4 border-2 border-muted p-2 hover:border-primary transition-colors">
+                                    <span className="font-mono text-sm">{colors.single.toUpperCase()}</span>
+                                    <input
+                                        type="color"
+                                        value={colors.single}
+                                        onChange={(e) => updateColor('single', e.target.value)}
+                                        className="w-12 h-12 p-0 border-0 cursor-pointer bg-transparent rounded-none"
+                                    />
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-xs font-mono text-muted uppercase">Status Indicator</label>
+                                    <div className="flex items-center justify-between gap-4 border-2 border-muted p-2 hover:border-primary transition-colors">
+                                        <span className="font-mono text-sm">{colors.status.toUpperCase()}</span>
+                                        <input
+                                            type="color"
+                                            value={colors.status}
+                                            onChange={(e) => updateColor('status', e.target.value)}
+                                            className="w-12 h-12 p-0 border-0 cursor-pointer bg-transparent rounded-none"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-xs font-mono text-muted uppercase">Focus Habit Border</label>
+                                    <div className="flex items-center justify-between gap-4 border-2 border-muted p-2 hover:border-primary transition-colors">
+                                        <span className="font-mono text-sm">{colors.focus.toUpperCase()}</span>
+                                        <input
+                                            type="color"
+                                            value={colors.focus}
+                                            onChange={(e) => updateColor('focus', e.target.value)}
+                                            className="w-12 h-12 p-0 border-0 cursor-pointer bg-transparent rounded-none"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex flex-col gap-2">
+                                    <label className="text-xs font-mono text-muted uppercase">Bonus Slots</label>
+                                    <div className="flex items-center justify-between gap-4 border-2 border-muted p-2 hover:border-primary transition-colors">
+                                        <span className="font-mono text-sm">{colors.bonus.toUpperCase()}</span>
+                                        <input
+                                            type="color"
+                                            value={colors.bonus}
+                                            onChange={(e) => updateColor('bonus', e.target.value)}
+                                            className="w-12 h-12 p-0 border-0 cursor-pointer bg-transparent rounded-none"
+                                        />
+                                    </div>
+                                </div>
+                            </>
+                        )}
+                    </div>
                 </div>
             </section>
 

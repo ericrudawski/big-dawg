@@ -181,9 +181,10 @@ export const HabitCard: React.FC<HabitCardProps> = ({
                         className={`
                             w-8 h-8 border-2 transition-all duration-200
                             ${isFilled
-                                ? 'bg-[#FF4500] border-[#FF4500]' // RAL Orange - NOTE: Orange color used here
+                                ? 'border-transparent' // Color handled by style
                                 : 'bg-transparent border-primary border-dashed hover:bg-primary/20'}
                         `}
+                        style={isFilled ? { backgroundColor: 'var(--accent-bonus)', borderColor: 'var(--accent-bonus)' } : undefined}
                     />
                 );
             })}

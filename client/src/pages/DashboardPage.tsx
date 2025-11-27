@@ -189,7 +189,8 @@ export const DashboardPage = () => {
                 <div className="flex justify-between items-end mt-4 font-mono text-sm">
                     <button
                         onClick={toggleStatus}
-                        className={`hover:text-primary/70 transition-colors uppercase ${status === 'ACTIVE' ? 'text-[#FF4500]' : ''}`} // NOTE: Orange color used here
+                        className={`hover:text-primary/70 transition-colors uppercase`}
+                        style={{ color: status === 'ACTIVE' ? 'var(--accent-status)' : undefined }}
                     >
                         STATUS: {status}
                     </button>
