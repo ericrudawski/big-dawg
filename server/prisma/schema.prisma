@@ -61,9 +61,12 @@ model HabitLog {
   habitId   String
   date      DateTime // YYYY-MM-DD
   value     Int      // 1 for binary, N for numeric
+  metadata  String?  // JSON string: Extra data (e.g. wake time)
   createdAt DateTime @default(now())
   
   habit     Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
 }
 
 model ChatMessage {

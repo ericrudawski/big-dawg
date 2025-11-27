@@ -9,14 +9,14 @@ interface Habit {
     weeklyTarget: number;
     streak: number;
     category: 'MAIN' | 'MICRO';
-    logs: { date: string, value: number }[];
+    logs: { date: string, value: number, metadata?: string }[];
 }
 
 export const DashboardPage = () => {
     const [habits, setHabits] = useState<Habit[]>([]);
     const [loading, setLoading] = useState(true);
     const [newHabitTitle, setNewHabitTitle] = useState('');
-    const [newHabitTarget, setNewHabitTarget] = useState(3);
+    const [newHabitTarget, setNewHabitTarget] = useState(0);
     const [newHabitCategory, setNewHabitCategory] = useState<'MAIN' | 'MICRO'>('MAIN');
     const [status, setStatus] = useState<'ACTIVE' | 'SUSPENDED'>('ACTIVE');
 
@@ -104,6 +104,41 @@ export const DashboardPage = () => {
 
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const updateHabitLog = async (habitId: string, date: string, value: number, metadata?: any) => {
+        try {
+            const res = await api.post('/habits/log', {
+                habitId,
+                date,
+                value,
+                metadata: metadata ? JSON.stringify(metadata) : undefined
+            });
+
+            setHabits(habits.map(h => {
+                if (h.id === habitId) {
+                    const logDate = new Date(date).toDateString();
+                    const existingLogIndex = h.logs.findIndex(l => new Date(l.date).toDateString() === logDate);
+                    let newLogs = [...h.logs];
+
+                    const newLog = {
+                        date,
+                        value,
+                        metadata: metadata ? JSON.stringify(metadata) : undefined
+                    };
+
+                    if (existingLogIndex >= 0) {
+                        newLogs[existingLogIndex] = newLog;
+                    } else {
+                        newLogs.push(newLog);
+                    }
+                    return { ...h, logs: newLogs };
+                }
+                return h;
+            }));
+        } catch (error) {
+            console.error('Failed to update log', error);
         }
     };
 
@@ -222,6 +257,8 @@ export const DashboardPage = () => {
                                             category={habit.category}
                                             onToggle={(action) => toggleSlot(habit.id, action)}
                                             onDelete={() => deleteHabit(habit.id)}
+                                            logs={habit.logs}
+                                            onLogUpdate={(date, value, metadata) => updateHabitLog(habit.id, date, value, metadata)}
                                         />
                                     ))}
                             </div>
@@ -240,30 +277,39 @@ export const DashboardPage = () => {
                                     placeholder="NEW DIRECTIVE..."
                                     className="w-full bg-transparent border-2 border-primary p-3 font-mono focus:outline-none focus:bg-primary focus:text-background placeholder-muted transition-colors rounded-none"
                                 />
-                                <div className="flex items-center border-2 border-primary px-3 bg-background w-full rounded-none">
-                                    <span className="text-xs font-bold mr-2">TARGET:</span>
-                                    <input
-                                        type="number"
-                                        value={newHabitTarget}
-                                        onChange={(e) => setNewHabitTarget(parseInt(e.target.value) || 0)}
-                                        className="flex-1 bg-transparent font-mono font-bold focus:outline-none p-3"
-                                    />
-                                </div>
                                 <div className="flex gap-4">
-                                    <button
-                                        type="button"
-                                        onClick={() => setNewHabitCategory('MAIN')}
-                                        className={`flex-1 py-3 border-2 border-primary font-bold transition-all ${newHabitCategory === 'MAIN' ? 'bg-primary text-background' : 'bg-transparent text-primary hover:bg-primary/10'}`}
-                                    >
-                                        MAIN
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setNewHabitCategory('MICRO')}
-                                        className={`flex-1 py-3 border-2 border-primary font-bold transition-all ${newHabitCategory === 'MICRO' ? 'bg-primary text-background' : 'bg-transparent text-primary hover:bg-primary/10'}`}
-                                    >
-                                        MICRO
-                                    </button>
+                                    <div className="flex flex-col gap-1">
+                                        <label className="text-[10px] font-mono text-muted uppercase">Target</label>
+                                        <input
+                                            type="text"
+                                            value={newHabitTarget || ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                if (val === '' || /^\d+$/.test(val)) {
+                                                    setNewHabitTarget(val === '' ? 0 : parseInt(val));
+                                                }
+                                            }}
+                                            className="w-12 h-12 bg-transparent border-2 border-primary text-center font-mono text-xl font-bold focus:outline-none focus:bg-primary/10 transition-colors rounded-none placeholder-primary/20"
+                                            maxLength={2}
+                                            placeholder="-"
+                                        />
+                                    </div>
+                                    <div className="flex gap-4 flex-1 items-end">
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewHabitCategory('MAIN')}
+                                            className={`flex-1 h-12 border-2 border-primary font-bold transition-all ${newHabitCategory === 'MAIN' ? 'bg-primary text-background' : 'bg-transparent text-primary hover:bg-primary/10'}`}
+                                        >
+                                            MAIN
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setNewHabitCategory('MICRO')}
+                                            className={`flex-1 h-12 border-2 border-primary font-bold transition-all ${newHabitCategory === 'MICRO' ? 'bg-primary text-background' : 'bg-transparent text-primary hover:bg-primary/10'}`}
+                                        >
+                                            MICRO
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             <button

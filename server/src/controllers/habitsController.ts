@@ -200,11 +200,12 @@ export const logHabit = async (req: Request, res: Response) => {
                     date: new Date(date),
                 },
             },
-            update: { value },
+            update: { value, metadata: req.body.metadata },
             create: {
                 habitId,
                 date: new Date(date),
                 value,
+                metadata: req.body.metadata,
             },
         });
         res.json(log);
