@@ -23,34 +23,61 @@ export const LoginPage = () => {
         }
     };
 
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+        const { clientX, clientY } = e;
+        const { innerWidth, innerHeight } = window;
+        setMousePos({
+            x: (clientX / innerWidth - 0.5) * 20,
+            y: (clientY / innerHeight - 0.5) * 20
+        });
+    };
+
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-            <div className="w-full max-w-md space-y-8">
-                <div className="text-center">
-                    <h1 className="text-4xl font-serif text-primary mb-2">Big Dawg</h1>
-                    <p className="text-muted">Welcome back, human.</p>
+        <div
+            className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden"
+            onMouseMove={handleMouseMove}
+        >
+            {/* Grid Background */}
+            <div
+                className="absolute inset-0 bg-grid-pattern pointer-events-none"
+                style={{
+                    transform: `translate(${mousePos.x}px, ${mousePos.y}px)`,
+                    opacity: 0.4
+                }}
+            ></div>
+
+            <div className="w-full max-w-md space-y-8 relative z-10">
+                <div className="text-center space-y-2">
+                    <h1 className="text-4xl font-black uppercase tracking-tighter text-primary">LOG IN</h1>
+                    <div className="h-1 w-24 bg-primary mx-auto"></div>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-6 bg-surface p-8 rounded-2xl shadow-sm border border-muted/10">
+                <form onSubmit={handleSubmit} className="space-y-6 bg-background p-8 border-4 border-primary shadow-[8px_8px_0px_0px_rgba(var(--color-primary),1)]">
                     <Input
-                        label="Email"
+                        label="USERNAME"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
+                        className="font-mono uppercase"
                     />
                     <Input
-                        label="Password"
+                        label="PASSWORD"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
+                        className="font-mono uppercase"
                     />
-                    <Button type="submit" className="w-full">Login</Button>
+                    <Button type="submit" className="w-full border-2 border-primary hover:bg-primary hover:text-background transition-all uppercase tracking-widest font-bold py-4 rounded-none">
+                        LOG IN
+                    </Button>
                 </form>
 
-                <p className="text-center text-sm text-muted">
-                    Don't have a dog yet? <Link to="/register" className="text-primary hover:underline">Adopt one</Link>
+                <p className="text-center text-xs font-mono text-muted uppercase tracking-widest">
+                    NO ACCOUNT? <Link to="/register" className="text-primary hover:underline font-bold">REGISTER</Link>
                 </p>
             </div>
         </div>

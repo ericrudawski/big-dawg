@@ -21,7 +21,7 @@ const themes = [
 ];
 
 export const SettingsPage = () => {
-    const { user, updateUser } = useAuth();
+    const { user, updateUser, logout } = useAuth();
     const { mode, setMode, colors, updateColor } = useAccent();
 
     const handleThemeChange = async (themeId: string) => {
@@ -163,9 +163,23 @@ export const SettingsPage = () => {
                 </div>
             </section>
 
+            {/* Logout Bar */}
+            <section className="space-y-6">
+                <div className="flex items-center gap-4">
+                    <h2 className="text-xl font-bold uppercase">USER</h2>
+                    <div className="h-px bg-primary flex-1"></div>
+                </div>
+                <button
+                    onClick={logout}
+                    className="w-full p-4 border-2 border-muted text-muted hover:border-primary hover:text-primary transition-all uppercase font-bold tracking-widest"
+                >
+                    LOG OUT
+                </button>
+            </section>
+
             {/* System Info */}
             <section className="border-t-2 border-muted/20 pt-8 font-mono text-xs text-muted">
-                <p>BIG DAWG PROTOCOL v2.0.0</p>
+                <p>KEEP GOING.</p>
                 <p>SYSTEM ID: {user?.id || 'UNKNOWN'}</p>
             </section>
         </div>
