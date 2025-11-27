@@ -47,6 +47,7 @@ model Habit {
   goal        Int?       // For numeric habits
   unit        String?    // e.g., "glasses", "minutes"
   weeklyTarget Int       @default(7) // Number of times per week to complete
+  category    String     @default("MAIN") // MAIN, MICRO
   frequency   String     // JSON string: { type: "daily" | "weekly" | "monthly" | "custom", days: [], interval: 1 }
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt

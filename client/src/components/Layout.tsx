@@ -1,10 +1,12 @@
 import React from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSwipe } from '../hooks/useSwipe';
 
 export const Layout = () => {
     const { user } = useAuth();
     const location = useLocation();
+    const navigate = useNavigate();
 
     const navItems = [
         { label: 'TODAY', path: '/' },
@@ -12,8 +14,30 @@ export const Layout = () => {
         { label: 'CONFIG', path: '/settings' },
     ];
 
+    const currentIndex = navItems.findIndex(item => item.path === location.pathname);
+
+    const handleSwipeLeft = () => {
+        if (currentIndex !== -1 && currentIndex < navItems.length - 1) {
+            navigate(navItems[currentIndex + 1].path);
+        }
+    };
+
+    const handleSwipeRight = () => {
+        if (currentIndex !== -1 && currentIndex > 0) {
+            navigate(navItems[currentIndex - 1].path);
+        }
+    };
+
+    const swipeHandlers = useSwipe({
+        onSwipedLeft: handleSwipeLeft,
+        onSwipedRight: handleSwipeRight,
+    });
+
     return (
-        <div className="min-h-screen bg-background text-text flex flex-col font-mono">
+        <div
+            className="min-h-screen bg-background text-text flex flex-col font-mono"
+            {...swipeHandlers}
+        >
             {/* Main Content */}
             <main className="flex-1 overflow-y-auto pb-24">
                 <Outlet />

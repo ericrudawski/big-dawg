@@ -25,7 +25,14 @@ export const getHabits = async (req: Request, res: Response) => {
 
         const currentWeekStart = getWeekStart(new Date());
 
-        const parsedHabits = habits.map((h: any) => {
+        const parsedHabits = habits.filter((h: any) => {
+            if (h.category === 'MICRO') {
+                // Only show if created this week (on or after currentWeekStart)
+                const createdAt = new Date(h.createdAt);
+                return createdAt >= currentWeekStart;
+            }
+            return true;
+        }).map((h: any) => {
             // Calculate Streak
             let streak = 0;
             let checkDate = new Date(currentWeekStart);
@@ -104,6 +111,7 @@ export const createHabit = async (req: Request, res: Response) => {
                 unit,
                 // @ts-ignore
                 weeklyTarget: weeklyTarget || 7,
+                category: req.body.category || 'MAIN',
                 frequency: JSON.stringify(frequency || { type: 'weekly' }),
             } as any,
         });
@@ -283,8 +291,149 @@ export const toggleSlot = async (req: Request, res: Response) => {
 };
 
 export const getStats = async (req: Request, res: Response) => {
-    // Placeholder for complex stats logic
-    res.json({ message: 'Stats endpoint' });
+    try {
+        // @ts-ignore
+        const userId = req.user.userId;
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const startOfYear = new Date(currentYear, 0, 1); // Jan 1st 00:00:00
+
+        // Fetch all habits
+        const habits = await prisma.habit.findMany({
+            where: { userId },
+            include: { logs: true }
+        });
+
+        // Fetch weekly statuses
+        const weeklyStatuses = await prisma.weeklyStatus.findMany({
+            where: {
+                userId,
+                weekStart: { gte: startOfYear }
+            }
+        });
+
+        // Helper to get week start
+        const getWeekStart = (date: Date) => {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            d.setHours(0, 0, 0, 0);
+            return new Date(d.setDate(diff));
+        };
+
+        let totalTarget = 0;
+        let totalCompleted = 0;
+        let perfectWeeks = 0;
+
+        // Track efficiency per habit
+        const habitStats: Record<string, { target: number, completed: number }> = {};
+        habits.forEach(h => {
+            habitStats[h.id] = { target: 0, completed: 0 };
+        });
+
+        // Streak tracking
+        let currentStreak = 0;
+
+        // Iterate weeks from start of year to current week
+        const currentWeekStart = getWeekStart(now);
+        let loopDate = getWeekStart(startOfYear);
+
+        while (loopDate <= currentWeekStart) {
+            const weekStart = new Date(loopDate);
+            const weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 7);
+
+            // Check if suspended
+            const statusObj = weeklyStatuses.find(s => s.weekStart.getTime() === weekStart.getTime());
+            const isSuspended = statusObj?.status === 'SUSPENDED';
+
+            if (!isSuspended) {
+                let weekTarget = 0;
+                let weekCompleted = 0;
+                let isPerfect = true;
+                let activeHabitsCount = 0;
+
+                for (const habit of habits) {
+                    // Check if habit existed this week (created before week end)
+                    // AND is not a MICRO habit (unless we want to track them separately, but requirement says "not counted for or against any stat metrics")
+                    if (new Date(habit.createdAt) < weekEnd && habit.category !== 'MICRO') {
+                        activeHabitsCount++;
+                        const target = habit.weeklyTarget;
+
+                        // Count logs for this habit in this week
+                        const logs = habit.logs.filter((l: any) => {
+                            const d = new Date(l.date);
+                            return d >= weekStart && d < weekEnd;
+                        });
+
+                        const count = logs.length;
+
+                        weekTarget += target;
+                        weekCompleted += count;
+
+                        // Update per-habit stats
+                        habitStats[habit.id].target += target;
+                        habitStats[habit.id].completed += count;
+
+                        if (count < target) {
+                            isPerfect = false;
+                        }
+                    }
+                }
+
+                if (activeHabitsCount > 0) {
+                    totalTarget += weekTarget;
+                    totalCompleted += weekCompleted;
+
+                    if (isPerfect) {
+                        perfectWeeks++;
+                        currentStreak++;
+                    } else {
+                        if (weekStart.getTime() !== currentWeekStart.getTime()) {
+                            currentStreak = 0;
+                        }
+                    }
+                }
+            }
+
+            // Move to next week
+            loopDate.setDate(loopDate.getDate() + 7);
+        }
+
+        // Calculate lowest efficiency habit
+        let lowestEfficiencyHabitId = null;
+        let lowestEfficiency = 101; // Start > 100
+
+        for (const [habitId, stats] of Object.entries(habitStats)) {
+            if (stats.target > 0) {
+                const eff = (stats.completed / stats.target) * 100;
+                if (eff < lowestEfficiency) {
+                    lowestEfficiency = eff;
+                    lowestEfficiencyHabitId = habitId;
+                }
+            }
+        }
+
+        // Calculate total suspended weeks YTD
+        const totalSuspendedWeeks = weeklyStatuses.filter(s =>
+            s.weekStart >= startOfYear && s.status === 'SUSPENDED'
+        ).length;
+
+        const efficiency = totalTarget > 0 ? Math.round((totalCompleted / totalTarget) * 100) : 0;
+
+        res.json({
+            efficiency,
+            perfectWeeks,
+            perfectWeekStreak: currentStreak,
+            lowestEfficiencyHabitId,
+            totalSuspendedWeeks
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch stats' });
+    }
 };
 
 export const getWeekStatus = async (req: Request, res: Response) => {

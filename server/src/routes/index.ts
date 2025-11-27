@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import { register, login, me, updateUser } from '../controllers/authController';
-import { getHabits, createHabit, updateHabit, deleteHabit, logHabit, toggleSlot, getWeekStatus, toggleWeekStatus } from '../controllers/habitsController';
+import { getHabits, createHabit, updateHabit, deleteHabit, logHabit, toggleSlot, getWeekStatus, toggleWeekStatus, getStats } from '../controllers/habitsController';
 import { getDogMotivation } from '../controllers/dogController';
 import { authenticateToken } from '../middleware/auth';
 import { analyzeImage } from '../controllers/uploadController';
@@ -24,6 +24,7 @@ router.delete('/habits/:id', authenticateToken, deleteHabit);
 // Status
 router.get('/habits/status', authenticateToken, getWeekStatus);
 router.post('/habits/status', authenticateToken, toggleWeekStatus);
+router.get('/stats', authenticateToken, getStats);
 
 // Logs
 router.post('/habit-logs', authenticateToken, logHabit);

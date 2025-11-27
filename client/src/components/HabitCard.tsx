@@ -5,6 +5,7 @@ interface HabitCardProps {
     streak: number;
     completedCount: number;
     weeklyTarget: number;
+    category?: 'MAIN' | 'MICRO';
     onToggle: (action: 'increment' | 'decrement') => void;
     onDelete: () => void;
 }
@@ -14,6 +15,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
     streak,
     completedCount,
     weeklyTarget,
+    category = 'MAIN',
     onToggle,
     onDelete
 }) => {
@@ -147,7 +149,7 @@ export const HabitCard: React.FC<HabitCardProps> = ({
     const clipId = `water-clip-${title.replace(/\s+/g, '-').toLowerCase()}`;
 
     return (
-        <div className="border-2 border-primary p-4 pb-10 flex flex-col gap-3 transition-all hover:bg-primary/5 group relative">
+        <div className={`border-2 border-primary p-4 pb-10 flex flex-col gap-3 transition-all hover:bg-primary/5 group relative ${category === 'MICRO' ? 'bg-[var(--color-muted)] text-background border-transparent' : ''}`}>
             <button
                 onClick={(e) => { e.stopPropagation(); onDelete(); }}
                 className="absolute bottom-2 right-2 text-muted hover:text-red-500 transition-colors font-mono text-xs"

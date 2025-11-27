@@ -8,6 +8,7 @@ interface Habit {
     title: string;
     weeklyTarget: number;
     streak: number;
+    category: 'MAIN' | 'MICRO';
     logs: { date: string, value: number }[];
 }
 
@@ -16,6 +17,7 @@ export const DashboardPage = () => {
     const [loading, setLoading] = useState(true);
     const [newHabitTitle, setNewHabitTitle] = useState('');
     const [newHabitTarget, setNewHabitTarget] = useState(3);
+    const [newHabitCategory, setNewHabitCategory] = useState<'MAIN' | 'MICRO'>('MAIN');
     const [status, setStatus] = useState<'ACTIVE' | 'SUSPENDED'>('ACTIVE');
 
     useEffect(() => {
@@ -114,11 +116,13 @@ export const DashboardPage = () => {
                 title: newHabitTitle,
                 weeklyTarget: newHabitTarget,
                 frequency: { type: 'weekly' },
+                category: newHabitCategory,
                 icon: 'dumbbell'
             });
             setHabits([...habits, { ...res.data, logs: [] }]);
             setNewHabitTitle('');
             setNewHabitTarget(0);
+            setNewHabitCategory('MAIN');
         } catch (error) {
             console.error('Failed to create habit', error);
         }
@@ -135,8 +139,9 @@ export const DashboardPage = () => {
     };
 
     // Stats
-    const totalWeeklyTargets = habits.reduce((acc, h) => acc + h.weeklyTarget, 0);
-    const totalWeeklyCompleted = habits.reduce((acc, h) => acc + getWeeklyProgress(h), 0);
+    const mainHabits = habits.filter(h => h.category !== 'MICRO');
+    const totalWeeklyTargets = mainHabits.reduce((acc, h) => acc + h.weeklyTarget, 0);
+    const totalWeeklyCompleted = mainHabits.reduce((acc, h) => acc + getWeeklyProgress(h), 0);
     const efficiency = status === 'SUSPENDED' ? 'N/A' : (totalWeeklyTargets > 0 ? Math.round((totalWeeklyCompleted / totalWeeklyTargets) * 100) + '%' : '0%');
 
     return (
@@ -164,7 +169,7 @@ export const DashboardPage = () => {
                 {/* Static Noise Overlay */}
                 {status === 'SUSPENDED' && (
                     <div
-                        className="absolute inset-0 z-50 bg-background/80"
+                        className="absolute inset-0 z-10 bg-background/80"
                         style={{
                             // We use a pseudo-element or just a background image for noise
                             // To make it "loud", we can use a high contrast noise
@@ -201,17 +206,24 @@ export const DashboardPage = () => {
                             <div className="animate-pulse bg-secondary h-12 w-full"></div>
                         ) : (
                             <div className="space-y-4">
-                                {habits.map(habit => (
-                                    <HabitCard
-                                        key={habit.id}
-                                        title={habit.title}
-                                        streak={habit.streak}
-                                        completedCount={getWeeklyProgress(habit)}
-                                        weeklyTarget={habit.weeklyTarget}
-                                        onToggle={(action) => toggleSlot(habit.id, action)}
-                                        onDelete={() => deleteHabit(habit.id)}
-                                    />
-                                ))}
+                                {[...habits]
+                                    .sort((a, b) => {
+                                        if (a.category === 'MICRO' && b.category !== 'MICRO') return -1;
+                                        if (a.category !== 'MICRO' && b.category === 'MICRO') return 1;
+                                        return 0;
+                                    })
+                                    .map(habit => (
+                                        <HabitCard
+                                            key={habit.id}
+                                            title={habit.title}
+                                            streak={habit.streak}
+                                            completedCount={getWeeklyProgress(habit)}
+                                            weeklyTarget={habit.weeklyTarget}
+                                            category={habit.category}
+                                            onToggle={(action) => toggleSlot(habit.id, action)}
+                                            onDelete={() => deleteHabit(habit.id)}
+                                        />
+                                    ))}
                             </div>
                         )}
 
@@ -236,6 +248,22 @@ export const DashboardPage = () => {
                                         onChange={(e) => setNewHabitTarget(parseInt(e.target.value) || 0)}
                                         className="flex-1 bg-transparent font-mono font-bold focus:outline-none p-3"
                                     />
+                                </div>
+                                <div className="flex gap-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewHabitCategory('MAIN')}
+                                        className={`flex-1 py-3 border-2 border-primary font-bold transition-all ${newHabitCategory === 'MAIN' ? 'bg-primary text-background' : 'bg-transparent text-primary hover:bg-primary/10'}`}
+                                    >
+                                        MAIN
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setNewHabitCategory('MICRO')}
+                                        className={`flex-1 py-3 border-2 border-primary font-bold transition-all ${newHabitCategory === 'MICRO' ? 'bg-primary text-background' : 'bg-transparent text-primary hover:bg-primary/10'}`}
+                                    >
+                                        MICRO
+                                    </button>
                                 </div>
                             </div>
                             <button
