@@ -179,10 +179,10 @@ export const HabitCard: React.FC<HabitCardProps> = ({
                             onToggle(action);
                         }}
                         className={`
-                            w-8 h-8 border-2 border-dashed transition-all duration-200
+                            w-8 h-8 border-2 transition-all duration-200
                             ${isFilled
-                                ? 'bg-[#FF4500] border-[#FF4500]' // RAL Orange
-                                : 'bg-transparent border-primary hover:bg-primary/20'}
+                                ? 'bg-[#FF4500] border-[#FF4500]' // RAL Orange - NOTE: Orange color used here
+                                : 'bg-transparent border-primary border-dashed hover:bg-primary/20'}
                         `}
                     />
                 );

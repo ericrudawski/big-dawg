@@ -128,7 +128,7 @@ export const StatsPage = () => {
                         return (
                             <div
                                 key={habit.id}
-                                className={`border-2 p-6 transition-all ${isLowestEfficiency ? 'border-[#FF4500]' : 'border-primary'}`}
+                                className={`border-2 p-6 transition-all ${isLowestEfficiency ? 'border-[#FF4500]' : 'border-primary'}`} // NOTE: Orange color used here
                             >
                                 <div className="flex justify-between items-end mb-4">
                                     <h2 className="text-xl font-bold uppercase">{habit.title}</h2>
